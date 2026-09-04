@@ -1,0 +1,161 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+}
+
+@theme {
+  /* VertikaX — Frosted Survey Grid design tokens */
+  --color-ink: oklch(0.165 0.018 264);
+  --color-panel: oklch(0.2 0.024 262);
+  --color-line: oklch(0.28 0.03 262);
+  --color-brass: oklch(0.82 0.145 82);
+  --color-signal: oklch(0.82 0.11 185);
+  --color-mist: oklch(0.72 0.03 250);
+  --color-frost: oklch(0.93 0.012 240);
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --animate-sweep: sweep 7s linear infinite;
+  --animate-pulse-soft: pulse-soft 2.4s ease-in-out infinite;
+
+  @keyframes sweep {
+    0% {
+      transform: translateX(-60vw);
+    }
+    100% {
+      transform: translateX(160vw);
+    }
+  }
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.165 0.018 264);
+  --foreground: oklch(0.93 0.012 240);
+  --card: oklch(0.2 0.024 262);
+  --card-foreground: oklch(0.93 0.012 240);
+  --popover: oklch(0.2 0.024 262);
+  --popover-foreground: oklch(0.93 0.012 240);
+  --primary: oklch(0.82 0.145 82);
+  --primary-foreground: oklch(0.165 0.018 264);
+  --secondary: oklch(0.28 0.03 262);
+  --secondary-foreground: oklch(0.93 0.012 240);
+  --muted: oklch(0.28 0.03 262);
+  --muted-foreground: oklch(0.72 0.03 250);
+  --accent: oklch(0.82 0.11 185);
+  --accent-foreground: oklch(0.165 0.018 264);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.93 0.012 240);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.82 0.11 185);
+  --chart-1: oklch(0.82 0.145 82);
+  --chart-2: oklch(0.82 0.11 185);
+  --chart-3: oklch(0.72 0.03 250);
+  --chart-4: oklch(0.93 0.012 240);
+  --chart-5: oklch(0.28 0.03 262);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+  }
+}
+
+/* Frosted Survey Grid surface treatments */
+@utility glass {
+  background: linear-gradient(
+    155deg,
+    oklch(1 0 0 / 5.5%),
+    oklch(1 0 0 / 2%)
+  );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid oklch(0.72 0.03 250 / 14%);
+}
+
+@utility frost {
+  background: linear-gradient(
+    155deg,
+    oklch(1 0 0 / 6%),
+    oklch(1 0 0 / 1.5%)
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@utility gridbg {
+  background-image: linear-gradient(
+      oklch(0.72 0.03 250 / 7%) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, oklch(0.72 0.03 250 / 7%) 1px, transparent 1px);
+  background-size: 46px 46px;
+}
+
+@utility brass-panel {
+  background: linear-gradient(
+    155deg,
+    oklch(0.82 0.145 82 / 8%),
+    oklch(0.82 0.145 82 / 2%)
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
