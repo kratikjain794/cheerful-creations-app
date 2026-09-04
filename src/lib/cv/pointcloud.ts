@@ -119,49 +119,73 @@ export function removeStatisticalOutliers(
     cell = Math.max(1e-3, diag / 60);
   }
 
-  const grid = new Map<string, number[]>();
-  const key = (x: number, y: number, z: number) =>
-    `${Math.floor(x / cell)},${Math.floor(y / cell)},${Math.floor(z / cell)}`;
+  // Integer cell coordinates are packed into a single number key, and the
+  // k nearest distances are kept with a bounded insertion instead of sorting
+  // every neighbour list — same result, far less allocation on large clouds.
+  const OFF = 65536; // 17 bits per axis keeps the packed key inside Number.MAX_SAFE_INTEGER
+  const cellOf = (v: number) =>
+    Math.min(OFF - 1, Math.max(-OFF, Math.floor(v / cell)));
+  const packed = (cx: number, cy: number, cz: number) =>
+    ((cx + OFF) * 131072 + (cy + OFF)) * 131072 + (cz + OFF);
+
+
+  const grid = new Map<number, number[]>();
+  const cxs = new Int32Array(cloud.count);
+  const cys = new Int32Array(cloud.count);
+  const czs = new Int32Array(cloud.count);
   for (let i = 0; i < cloud.count; i++) {
-    const kk = key(cloud.positions[i * 3], cloud.positions[i * 3 + 1], cloud.positions[i * 3 + 2]);
+    const cx = cellOf(cloud.positions[i * 3]);
+    const cy = cellOf(cloud.positions[i * 3 + 1]);
+    const cz = cellOf(cloud.positions[i * 3 + 2]);
+    cxs[i] = cx;
+    cys[i] = cy;
+    czs[i] = cz;
+    const kk = packed(cx, cy, cz);
     const arr = grid.get(kk);
     if (arr) arr.push(i);
     else grid.set(kk, [i]);
   }
 
   const meanDist = new Float32Array(cloud.count);
+  const best = new Float64Array(k);
   for (let i = 0; i < cloud.count; i++) {
     const x = cloud.positions[i * 3];
     const y = cloud.positions[i * 3 + 1];
     const z = cloud.positions[i * 3 + 2];
-    const cx = Math.floor(x / cell);
-    const cy = Math.floor(y / cell);
-    const cz = Math.floor(z / cell);
-    const dists: number[] = [];
+    const cx = cxs[i];
+    const cy = cys[i];
+    const cz = czs[i];
+    let filled = 0;
     for (let dx = -1; dx <= 1; dx++)
       for (let dy = -1; dy <= 1; dy++)
         for (let dz = -1; dz <= 1; dz++) {
-          const arr = grid.get(`${cx + dx},${cy + dy},${cz + dz}`);
+          const arr = grid.get(packed(cx + dx, cy + dy, cz + dz));
           if (!arr) continue;
           for (const j of arr) {
             if (j === i) continue;
-            dists.push(
-              Math.hypot(
-                cloud.positions[j * 3] - x,
-                cloud.positions[j * 3 + 1] - y,
-                cloud.positions[j * 3 + 2] - z,
-              ),
-            );
+            const ddx = cloud.positions[j * 3] - x;
+            const ddy = cloud.positions[j * 3 + 1] - y;
+            const ddz = cloud.positions[j * 3 + 2] - z;
+            const d2 = ddx * ddx + ddy * ddy + ddz * ddz;
+            if (filled === k && d2 >= best[k - 1]) continue;
+            let pos = filled < k ? filled : k - 1;
+            while (pos > 0 && best[pos - 1] > d2) {
+              best[pos] = best[pos - 1];
+              pos--;
+            }
+            best[pos] = d2;
+            if (filled < k) filled++;
           }
         }
-    if (!dists.length) {
+    if (!filled) {
       meanDist[i] = Infinity;
       continue;
     }
-    dists.sort((a, b) => a - b);
-    const use = dists.slice(0, Math.min(k, dists.length));
-    meanDist[i] = use.reduce((s, v) => s + v, 0) / use.length;
+    let sum = 0;
+    for (let n = 0; n < filled; n++) sum += Math.sqrt(best[n]);
+    meanDist[i] = sum / filled;
   }
+
 
   const finite = Array.from(meanDist).filter((v) => Number.isFinite(v));
   const mean = finite.reduce((s, v) => s + v, 0) / (finite.length || 1);
